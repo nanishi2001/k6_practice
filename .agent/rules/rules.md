@@ -146,10 +146,26 @@ if (!apiKey) {
 
 **mainブランチへの直接コミットは禁止です。**
 
-1. `git checkout -b <type>/<description>`
-2. 作業・コミット
-3. `gh pr create` でPR作成
-4. マージ
+#### 作業開始手順
+
+```bash
+# 1. mainブランチに切り替え
+git checkout main
+
+# 2. 最新の変更を取得
+git pull origin main
+
+# 3. 新規ブランチを作成
+git checkout -b <type>/<description>
+```
+
+#### ワークフロー
+
+1. mainから最新を取得
+2. 新規ブランチを作成
+3. 作業・コミット
+4. `gh pr create` でPR作成
+5. マージ
 
 ### ブランチ命名規則
 
