@@ -1,0 +1,45 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Secrets
+*.key
+*.pem
+secrets.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Nix
+result
+result-*
+
+# k6 outputs
+*.html
+*.json.gz
+
+# Test results
+results/
+reports/
+
+# Build output
+dist/
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+
+# Personal configs
+personal/
+private/
+
+# Go
+api/go.sum
