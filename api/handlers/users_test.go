@@ -91,8 +91,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		handler := setupUsersHandler()
 
 		body := CreateUserRequest{
-			Name:  "Test User",
-			Email: "test@example.com",
+			Name:  TestNewUserName,
+			Email: TestNewUserEmail,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPost, "/users", bytes.NewReader(jsonBody))
@@ -110,11 +110,11 @@ func TestUsersHandler_Create(t *testing.T) {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if user.Name != "Test User" {
-			t.Errorf("expected name 'Test User', got '%s'", user.Name)
+		if user.Name != TestNewUserName {
+			t.Errorf("expected name '%s', got '%s'", TestNewUserName, user.Name)
 		}
-		if user.Email != "test@example.com" {
-			t.Errorf("expected email 'test@example.com', got '%s'", user.Email)
+		if user.Email != TestNewUserEmail {
+			t.Errorf("expected email '%s', got '%s'", TestNewUserEmail, user.Email)
 		}
 	})
 
@@ -122,7 +122,7 @@ func TestUsersHandler_Create(t *testing.T) {
 		handler := setupUsersHandler()
 
 		body := CreateUserRequest{
-			Name: "Test User",
+			Name: TestNewUserName,
 			// Email missing
 		}
 		jsonBody, _ := json.Marshal(body)
@@ -155,7 +155,7 @@ func TestUsersHandler_Create(t *testing.T) {
 		handler := setupUsersHandler()
 
 		body := CreateUserRequest{
-			Name:  "Test User",
+			Name:  TestNewUserName,
 			Email: "invalid-email",
 		}
 		jsonBody, _ := json.Marshal(body)
@@ -176,8 +176,8 @@ func TestUsersHandler_Update(t *testing.T) {
 		handler := setupUsersHandler()
 
 		body := CreateUserRequest{
-			Name:  "Updated Name",
-			Email: "updated@example.com",
+			Name:  TestUpdatedUserName,
+			Email: TestUpdatedUserEmail,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPut, "/users/1", bytes.NewReader(jsonBody))
@@ -195,8 +195,8 @@ func TestUsersHandler_Update(t *testing.T) {
 			t.Fatalf("failed to decode response: %v", err)
 		}
 
-		if user.Name != "Updated Name" {
-			t.Errorf("expected name 'Updated Name', got '%s'", user.Name)
+		if user.Name != TestUpdatedUserName {
+			t.Errorf("expected name '%s', got '%s'", TestUpdatedUserName, user.Name)
 		}
 	})
 
@@ -204,8 +204,8 @@ func TestUsersHandler_Update(t *testing.T) {
 		handler := setupUsersHandler()
 
 		body := CreateUserRequest{
-			Name:  "Updated Name",
-			Email: "updated@example.com",
+			Name:  TestUpdatedUserName,
+			Email: TestUpdatedUserEmail,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPut, "/users/999", bytes.NewReader(jsonBody))
