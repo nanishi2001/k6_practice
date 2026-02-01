@@ -18,14 +18,26 @@ export const options: Options = {
   },
 };
 
-const BASE_URL = 'https://test.k6.io';
+const BASE_URL = __ENV.API_URL || 'http://localhost:8080';
 
 export default function (): void {
-  const response = http.get(`${BASE_URL}/news.php`);
+  // ランダム遅延エンドポイント（スパイク耐性テスト用）
+  const randomDelayRes = http.get(`${BASE_URL}/random-delay`);
+  check(randomDelayRes, {
+    'random-delay: status is 200': (r) => r.status === 200,
+    'random-delay: has body': (r) => r.body !== null && r.body.length > 0,
+  });
 
-  check(response, {
-    'status is 200': (r) => r.status === 200,
-    'response body contains content': (r) => r.body !== null && r.body.length > 0,
+  // ヘルスチェック
+  const healthRes = http.get(`${BASE_URL}/health`);
+  check(healthRes, {
+    'health: status is 200': (r) => r.status === 200,
+  });
+
+  // エラーレートエンドポイント（5%エラー）
+  const errorRes = http.get(`${BASE_URL}/error-rate/5`);
+  check(errorRes, {
+    'error-rate: responded': (r) => r.status === 200 || r.status === 500,
   });
 
   sleep(0.5);

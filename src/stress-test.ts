@@ -18,14 +18,30 @@ export const options: Options = {
   },
 };
 
-const BASE_URL = 'https://test.k6.io';
+const BASE_URL = __ENV.API_URL || 'http://localhost:8080';
 
 export default function (): void {
-  const response = http.get(`${BASE_URL}/contacts.php`);
+  // ユーザー作成
+  const createRes = http.post(
+    `${BASE_URL}/users`,
+    JSON.stringify({ name: `user_${Date.now()}`, email: `test_${Date.now()}@example.com` }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  check(createRes, {
+    'create: status is 201': (r) => r.status === 201,
+    'create: response time < 1000ms': (r) => r.timings.duration < 1000,
+  });
 
-  check(response, {
-    'status is 200': (r) => r.status === 200,
-    'response time < 1000ms': (r) => r.timings.duration < 1000,
+  // ユーザー一覧取得
+  const listRes = http.get(`${BASE_URL}/users`);
+  check(listRes, {
+    'list: status is 200': (r) => r.status === 200,
+  });
+
+  // 遅延エンドポイント（負荷テスト用）
+  const delayRes = http.get(`${BASE_URL}/delay/50`);
+  check(delayRes, {
+    'delay: status is 200': (r) => r.status === 200,
   });
 
   sleep(Math.random() * 2 + 1); // 1-3秒のランダムスリープ
