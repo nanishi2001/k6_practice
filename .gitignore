@@ -41,5 +41,5 @@ node_modules/
 personal/
 private/
 
-# Go
-api/go.sum
+# Go build artifacts
+api/*.exe
