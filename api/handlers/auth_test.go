@@ -22,8 +22,8 @@ func TestAuthHandler_Login(t *testing.T) {
 
 	t.Run("POST /auth/login with valid credentials returns tokens", func(t *testing.T) {
 		body := LoginRequest{
-			Email:    "alice@example.com",
-			Password: "password",
+			Email:    TestUserEmailAlice,
+			Password: TestValidPassword,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(jsonBody))
@@ -47,15 +47,15 @@ func TestAuthHandler_Login(t *testing.T) {
 		if resp.RefreshToken == "" {
 			t.Error("expected refresh_token to be set")
 		}
-		if resp.ExpiresIn != 900 {
-			t.Errorf("expected expires_in 900, got %d", resp.ExpiresIn)
+		if resp.ExpiresIn != TestExpectedExpiresIn {
+			t.Errorf("expected expires_in %d, got %d", TestExpectedExpiresIn, resp.ExpiresIn)
 		}
 	})
 
 	t.Run("POST /auth/login with invalid password returns unauthorized", func(t *testing.T) {
 		body := LoginRequest{
-			Email:    "alice@example.com",
-			Password: "wrongpassword",
+			Email:    TestUserEmailAlice,
+			Password: TestInvalidPassword,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(jsonBody))
@@ -71,8 +71,8 @@ func TestAuthHandler_Login(t *testing.T) {
 
 	t.Run("POST /auth/login with unknown email returns unauthorized", func(t *testing.T) {
 		body := LoginRequest{
-			Email:    "unknown@example.com",
-			Password: "password",
+			Email:    TestUserEmailUnknown,
+			Password: TestValidPassword,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(jsonBody))
@@ -116,8 +116,8 @@ func TestAuthHandler_Refresh(t *testing.T) {
 	t.Run("POST /auth/refresh with valid token returns new tokens", func(t *testing.T) {
 		// まずログインしてトークンを取得
 		loginBody := LoginRequest{
-			Email:    "alice@example.com",
-			Password: "password",
+			Email:    TestUserEmailAlice,
+			Password: TestValidPassword,
 		}
 		jsonBody, _ := json.Marshal(loginBody)
 		loginReq := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(jsonBody))
@@ -159,7 +159,7 @@ func TestAuthHandler_Refresh(t *testing.T) {
 		body := struct {
 			RefreshToken string `json:"refresh_token"`
 		}{
-			RefreshToken: "invalid-token",
+			RefreshToken: TestInvalidToken,
 		}
 		jsonBody, _ := json.Marshal(body)
 		req := httptest.NewRequest(http.MethodPost, "/auth/refresh", bytes.NewReader(jsonBody))
@@ -183,7 +183,7 @@ func TestAuthHandler_Me(t *testing.T) {
 		// コンテキストにユーザー情報を設定
 		claims := &middleware.Claims{
 			UserID: 1,
-			Email:  "alice@example.com",
+			Email:  TestUserEmailAlice,
 		}
 		ctx := context.WithValue(req.Context(), middleware.UserContextKey, claims)
 		req = req.WithContext(ctx)
@@ -203,8 +203,8 @@ func TestAuthHandler_Me(t *testing.T) {
 		if resp.UserID != 1 {
 			t.Errorf("expected user_id 1, got %d", resp.UserID)
 		}
-		if resp.Email != "alice@example.com" {
-			t.Errorf("expected email 'alice@example.com', got '%s'", resp.Email)
+		if resp.Email != TestUserEmailAlice {
+			t.Errorf("expected email '%s', got '%s'", TestUserEmailAlice, resp.Email)
 		}
 	})
 
