@@ -125,20 +125,35 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 **type**: `feat`, `fix`, `refactor`, `docs`, `ci`, `test`, `chore`
 
-### PR作成フロー
+### PR作成フロー（git worktree使用）
 
-1. 機能ブランチを作成: `git checkout -b feat/機能名`
-2. 変更をコミット
-3. リモートにプッシュ: `git push -u origin feat/機能名`
-4. `gh pr create` でPR作成
-5. CIが通ることを確認
-6. レビュー後マージ
+```bash
+# 1. worktreeで作業ブランチを作成
+git worktree add -b <type>/<description> ../<project>-<short-name> main
+
+# 2. worktreeディレクトリで作業・コミット
+cd ../<project>-<short-name>
+# ... 作業 ...
+git add <files>
+git commit -m "<type>(<scope>): <subject>"
+
+# 3. リモートにプッシュ
+git push -u origin <type>/<description>
+
+# 4. PR作成
+gh pr create
+
+# 5. マージ後、worktreeとブランチを削除
+git worktree remove ../<project>-<short-name>
+git branch -d <type>/<description>
+```
 
 ### 注意事項
 
-- `main` ブランチへの直接プッシュは禁止
+- `main` ブランチへの直接プッシュ・コミットは禁止
 - PRは必ずCIを通過させる
 - 1つのPRは1つの目的に絞る
+- マージ済みのworktreeは速やかに削除する
 
 ## Available Commands
 
