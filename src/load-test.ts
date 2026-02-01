@@ -15,14 +15,27 @@ export const options: Options = {
   },
 };
 
-const BASE_URL = 'https://test.k6.io';
+const BASE_URL = __ENV.API_URL || 'http://localhost:8080';
 
 export default function (): void {
-  const response = http.get(BASE_URL);
+  // ヘルスチェック
+  const healthRes = http.get(`${BASE_URL}/health`);
+  check(healthRes, {
+    'health: status is 200': (r) => r.status === 200,
+    'health: response time < 500ms': (r) => r.timings.duration < 500,
+  });
 
-  check(response, {
-    'status is 200': (r) => r.status === 200,
-    'response time < 500ms': (r) => r.timings.duration < 500,
+  // ユーザー一覧取得
+  const usersRes = http.get(`${BASE_URL}/users`);
+  check(usersRes, {
+    'users: status is 200': (r) => r.status === 200,
+    'users: response time < 500ms': (r) => r.timings.duration < 500,
+  });
+
+  // 個別ユーザー取得
+  const userRes = http.get(`${BASE_URL}/users/1`);
+  check(userRes, {
+    'user: status is 200': (r) => r.status === 200,
   });
 
   sleep(1);

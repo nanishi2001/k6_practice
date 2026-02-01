@@ -65,6 +65,8 @@
             echo "k6 version: $(k6 version)"
             echo "Bun version: $(bun --version)"
             echo ""
+            echo "Target API: ''${API_URL:-http://localhost:8080}"
+            echo ""
             echo "Setup: bun install"
             echo ""
             echo "Commands:"
@@ -73,6 +75,9 @@
             echo "  bun run test:stress            - Run stress test"
             echo "  bun run test:spike             - Run spike test"
             echo "  bun run test:all               - Run all tests"
+            echo ""
+            echo "Custom API URL:"
+            echo "  API_URL=http://example.com bun run test:load"
           '';
         };
 
