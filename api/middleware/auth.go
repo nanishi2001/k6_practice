@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"k6-practice/api/models"
 )
 
 type contextKey string
@@ -26,11 +28,8 @@ func getJWTSecret() []byte {
 	return []byte(secret)
 }
 
-type Claims struct {
-	UserID int    `json:"user_id"`
-	Email  string `json:"email"`
-	jwt.RegisteredClaims
-}
+// Claims はmodels.Claimsのエイリアス（後方互換性のため）
+type Claims = models.Claims
 
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
