@@ -229,5 +229,4 @@ git branch -d <branch-name>
 
 ## Browser Automation
 
-- ブラウザ操作には必ず **Vercel AI SDK の agent-browser** を使用してください。
-- Playwright MCP toolsやNode.js/Pythonによる自前スクリプトの実行は禁止します。
+- ブラウザ操作には **Vercel AI SDK の agent-browser** を使用してください。
