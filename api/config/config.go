@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -46,7 +47,7 @@ func Load() *Config {
 			Addr: getEnv("SERVER_ADDR", ":8080"),
 		},
 		RateLimit: RateLimitConfig{
-			Requests: 100,
+			Requests: getEnvInt("RATE_LIMIT", 100),
 			Window:   1 * time.Minute,
 		},
 		BodyLimit: 1 * 1024 * 1024, // 1MB
@@ -78,6 +79,15 @@ func Load() *Config {
 func getEnv(key, defaultValue string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
 	}
 	return defaultValue
 }
