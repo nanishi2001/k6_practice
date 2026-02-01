@@ -90,20 +90,40 @@ if (!apiKey) {
 3. 対象システムの状態を確認
 4. 段階的に修正・検証
 
-## Agent Orchestration
+## Skills vs Agents（Token効率）
 
-### 利用可能なエージェント
+### 使い分けの原則
 
-| エージェント | 用途 | トリガー |
-|-------------|------|----------|
-| `planner` | 実装計画の作成 | 複雑な機能追加時 |
-| `k6-reviewer` | k6テストのレビュー | テストスクリプト作成後 |
+| 用途 | 推奨 | 理由 |
+|------|------|------|
+| 単発コマンド（1-2ステップ） | **Skill** | 低token消費 |
+| 複雑な探索・分析（3+ステップ） | **Agent** | 別コンテキストで実行 |
+| 単純なファイル操作 | **直接ツール** | 最小token消費 |
 
-### エージェント呼び出しルール
+### 利用可能なSkills
 
-- 複雑なタスクには`planner`を使用してから実装
-- 新しいk6テストを書いたら`k6-reviewer`でレビュー
-- 独立したタスクは並列実行で効率化
+| Skill | 用途 | 呼び出し |
+|-------|------|----------|
+| `k6-run` | テスト実行 | `/k6-run [type]` |
+| `k6-new` | テンプレート生成 | `/k6-new <name>` |
+
+### 利用可能なAgents
+
+| Agent | 用途 | トリガー |
+|-------|------|----------|
+| `planner` | 実装計画作成 | 複雑な機能追加時 |
+| `k6-reviewer` | テストレビュー | テストスクリプト作成後 |
+| `Explore` | コードベース探索 | 調査・分析時 |
+
+### 判断基準
+
+```
+タスク受信 → ステップ数は？
+  ├─ 1-2: 会話コンテキスト必要？ → Yes: Skill / No: 直接ツール
+  └─ 3+:  ファイル探索必要？ → Yes: Agent / No: 直接実行
+```
+
+詳細: `.agent/docs/token-efficiency.md`
 
 ## Performance (Model Selection)
 
@@ -124,12 +144,12 @@ if (!apiKey) {
 
 ### ブランチ運用（必須）
 
-**mainブランチへの直接コミットは禁止です。** 以下のフローに従ってください：
+**mainブランチへの直接コミットは禁止です。**
 
-1. **ブランチを作成**: `git checkout -b <type>/<description>`
-2. **作業・コミット**: 変更をコミット
-3. **PRを作成**: `gh pr create` でPull Requestを作成
-4. **マージ**: レビュー後にマージ
+1. `git checkout -b <type>/<description>`
+2. 作業・コミット
+3. `gh pr create` でPR作成
+4. マージ
 
 ### ブランチ命名規則
 
@@ -137,17 +157,12 @@ if (!apiKey) {
 <type>/<short-description>
 ```
 
-例：
-- `feat/add-soak-test`
-- `fix/threshold-calculation`
-- `refactor/handler-structure`
+例: `feat/add-soak-test`, `fix/threshold-calculation`
 
 ### コミットメッセージ形式
 
 ```
 <type>: <description>
-
-[optional body]
 ```
 
 ### タイプ
