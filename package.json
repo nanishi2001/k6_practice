@@ -15,5 +15,8 @@
   "devDependencies": {
     "@types/k6": "^0.54.0",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "agent-browser": "^0.8.6"
   }
 }
