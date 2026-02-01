@@ -1,0 +1,19 @@
+{
+  "name": "k6-practice",
+  "version": "1.0.0",
+  "description": "k6 performance testing with TypeScript",
+  "scripts": {
+    "build": "bun build src/*.ts --outdir dist --target browser --external 'k6' --external 'k6/*'",
+    "build:watch": "bun build src/*.ts --outdir dist --target browser --external 'k6' --external 'k6/*' --watch",
+    "test:load": "bun run build && k6 run dist/load-test.js",
+    "test:stress": "bun run build && k6 run dist/stress-test.js",
+    "test:spike": "bun run build && k6 run dist/spike-test.js",
+    "test:all": "bun run build && k6 run dist/load-test.js && k6 run dist/stress-test.js && k6 run dist/spike-test.js",
+    "api": "cd api && go run .",
+    "api:build": "cd api && go build -o ../dist/api ."
+  },
+  "devDependencies": {
+    "@types/k6": "^0.54.0",
+    "typescript": "^5.7.0"
+  }
+}
