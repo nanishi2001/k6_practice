@@ -122,6 +122,26 @@ if (!apiKey) {
 
 ## Git Workflow
 
+### ブランチ運用（必須）
+
+**mainブランチへの直接コミットは禁止です。** 以下のフローに従ってください：
+
+1. **ブランチを作成**: `git checkout -b <type>/<description>`
+2. **作業・コミット**: 変更をコミット
+3. **PRを作成**: `gh pr create` でPull Requestを作成
+4. **マージ**: レビュー後にマージ
+
+### ブランチ命名規則
+
+```
+<type>/<short-description>
+```
+
+例：
+- `feat/add-soak-test`
+- `fix/threshold-calculation`
+- `refactor/handler-structure`
+
 ### コミットメッセージ形式
 
 ```
@@ -138,6 +158,12 @@ if (!apiKey) {
 - `docs`: ドキュメント
 - `refactor`: リファクタリング
 - `chore`: その他
+
+### PR作成時の注意
+
+- タイトルは70文字以内
+- 変更内容のサマリーを記載
+- テスト計画を含める
 
 ## Browser Automation
 
