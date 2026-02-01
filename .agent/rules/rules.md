@@ -196,7 +196,38 @@ git checkout -b <type>/<description>
 - 変更内容のサマリーを記載
 - テスト計画を含める
 
+### Git Worktree管理
+
+#### マージ済みworktreeの削除手順
+
+```bash
+# 1. worktree一覧を確認
+git worktree list
+
+# 2. マージ済みPRを確認
+gh pr list --head "<branch-name>" --state merged
+
+# 3. worktreeを削除
+git worktree remove <worktree-path>
+
+# 4. ローカルブランチも削除
+git branch -d <branch-name>
+```
+
+#### 一括削除（マージ済みのみ）
+
+```bash
+# マージ済みworktreeを確認してから削除
+for branch in feat/xxx ci/yyy; do
+  gh pr list --head "$branch" --state merged --json number
+done
+
+# 確認後、worktreeとブランチを削除
+git worktree remove /path/to/worktree
+git branch -d <branch-name>
+```
+
 ## Browser Automation
 
-- ブラウザ操作には必ず **Playwright MCP tools** を使用してください。
-- Node.jsやPythonによる自前スクリプトの実行は禁止します。
+- ブラウザ操作には必ず **Vercel AI SDK の agent-browser** を使用してください。
+- Playwright MCP toolsやNode.js/Pythonによる自前スクリプトの実行は禁止します。
