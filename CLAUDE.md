@@ -100,6 +100,46 @@ export const options: Options = {
 };
 ```
 
+## Git Flow
+
+### ブランチ命名規則
+
+| プレフィックス | 用途 | 例 |
+|--------------|------|-----|
+| `feat/` | 新機能追加 | `feat/api-unit-tests` |
+| `fix/` | バグ修正 | `fix/auth-token-expiry` |
+| `refactor/` | リファクタリング | `refactor/extract-test-credentials` |
+| `docs/` | ドキュメント | `docs/update-readme` |
+| `ci/` | CI/CD関連 | `ci/add-github-actions` |
+| `test/` | テスト追加 | `test/add-integration-tests` |
+
+### コミットメッセージ規則
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+```
+
+**type**: `feat`, `fix`, `refactor`, `docs`, `ci`, `test`, `chore`
+
+### PR作成フロー
+
+1. 機能ブランチを作成: `git checkout -b feat/機能名`
+2. 変更をコミット
+3. リモートにプッシュ: `git push -u origin feat/機能名`
+4. `gh pr create` でPR作成
+5. CIが通ることを確認
+6. レビュー後マージ
+
+### 注意事項
+
+- `main` ブランチへの直接プッシュは禁止
+- PRは必ずCIを通過させる
+- 1つのPRは1つの目的に絞る
+
 ## Available Commands
 
 - `nix develop` - 開発環境に入る
@@ -109,3 +149,4 @@ export const options: Options = {
 - `bun run test:stress` - ストレステスト実行
 - `bun run test:spike` - スパイクテスト実行
 - `bun run test:all` - 全テスト実行
+- `go test ./... -v` - Go APIテスト実行 (api/ディレクトリ内)
