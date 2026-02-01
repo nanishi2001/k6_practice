@@ -12,6 +12,29 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        # API サーバーパッケージ
+        packages.api = pkgs.buildGoModule {
+          pname = "k6-practice-api";
+          version = "1.0.0";
+          src = ./api;
+          vendorHash = "sha256-deZ8L5aju1JraGTnjIW3vR1zm5Jc15F6D+goi1pVLpU=";
+
+          meta = with pkgs.lib; {
+            description = "k6 practice API server";
+            license = licenses.mit;
+          };
+        };
+
+        packages.default = self.packages.${system}.api;
+
+        # アプリケーション定義
+        apps.api = {
+          type = "app";
+          program = "${self.packages.${system}.api}/bin/api";
+        };
+
+        apps.default = self.apps.${system}.api;
+
         # API サーバー用環境 (Go)
         devShells.api = pkgs.mkShell {
           buildInputs = with pkgs; [
