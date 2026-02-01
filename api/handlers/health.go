@@ -13,15 +13,13 @@ type HealthResponse struct {
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, `{"error": "method not allowed"}`, http.StatusMethodNotAllowed)
+		methodNotAllowed(w)
 		return
 	}
 
-	response := HealthResponse{
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(HealthResponse{
 		Status:    "ok",
 		Timestamp: time.Now(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	})
 }

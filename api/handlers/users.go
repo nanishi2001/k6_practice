@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"k6-practice/api/middleware"
 	"k6-practice/api/models"
 )
 
@@ -22,10 +23,6 @@ type CreateUserRequest struct {
 	Email string `json:"email"`
 }
 
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 func (h *UsersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -39,14 +36,14 @@ func (h *UsersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case http.MethodPost:
 			h.create(w, r)
 		default:
-			http.Error(w, `{"error": "method not allowed"}`, http.StatusMethodNotAllowed)
+			methodNotAllowed(w)
 		}
 		return
 	}
 
 	id, err := strconv.Atoi(path)
 	if err != nil {
-		http.Error(w, `{"error": "invalid user id"}`, http.StatusBadRequest)
+		writeError(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
@@ -58,7 +55,7 @@ func (h *UsersHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		h.delete(w, r, id)
 	default:
-		http.Error(w, `{"error": "method not allowed"}`, http.StatusMethodNotAllowed)
+		methodNotAllowed(w)
 	}
 }
 
@@ -70,50 +67,36 @@ func (h *UsersHandler) list(w http.ResponseWriter, r *http.Request) {
 func (h *UsersHandler) get(w http.ResponseWriter, r *http.Request, id int) {
 	user := h.store.Get(id)
 	if user == nil {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "user not found"})
+		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 	json.NewEncoder(w).Encode(user)
 }
 
 func (h *UsersHandler) create(w http.ResponseWriter, r *http.Request) {
-	var req CreateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid request body"})
-		return
-	}
-
-	if req.Name == "" || req.Email == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "name and email are required"})
+	req, ok := h.parseAndValidateUserRequest(w, r)
+	if !ok {
 		return
 	}
 
 	user := h.store.Create(req.Name, req.Email)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
+	writeJSON(w, http.StatusCreated, user)
 }
 
 func (h *UsersHandler) update(w http.ResponseWriter, r *http.Request, id int) {
-	var req CreateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid request body"})
+	if !middleware.ValidateID(id) {
+		writeError(w, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
-	if req.Name == "" || req.Email == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "name and email are required"})
+	req, ok := h.parseAndValidateUserRequest(w, r)
+	if !ok {
 		return
 	}
 
 	user := h.store.Update(id, req.Name, req.Email)
 	if user == nil {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "user not found"})
+		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 	json.NewEncoder(w).Encode(user)
@@ -121,9 +104,44 @@ func (h *UsersHandler) update(w http.ResponseWriter, r *http.Request, id int) {
 
 func (h *UsersHandler) delete(w http.ResponseWriter, r *http.Request, id int) {
 	if !h.store.Delete(id) {
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "user not found"})
+		writeError(w, http.StatusNotFound, "user not found")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// parseAndValidateUserRequest はリクエストボディをパースしてバリデーションを行う
+func (h *UsersHandler) parseAndValidateUserRequest(w http.ResponseWriter, r *http.Request) (*CreateUserRequest, bool) {
+	var req CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.LogSecurityEvent(middleware.EventInvalidInput, r, "invalid JSON body")
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return nil, false
+	}
+
+	// 入力のサニタイズ
+	req.Name = middleware.SanitizeString(req.Name)
+	req.Email = middleware.SanitizeString(req.Email)
+
+	// 必須チェック
+	if req.Name == "" || req.Email == "" {
+		writeError(w, http.StatusBadRequest, "name and email are required")
+		return nil, false
+	}
+
+	// Name検証
+	if !middleware.ValidateName(req.Name) {
+		middleware.LogSecurityEvent(middleware.EventInvalidInput, r, "invalid name format")
+		writeError(w, http.StatusBadRequest, "invalid name format")
+		return nil, false
+	}
+
+	// Email検証
+	if !middleware.ValidateEmail(req.Email) {
+		middleware.LogSecurityEvent(middleware.EventInvalidInput, r, "invalid email format")
+		writeError(w, http.StatusBadRequest, "invalid email format")
+		return nil, false
+	}
+
+	return &req, true
 }

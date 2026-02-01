@@ -9,13 +9,18 @@ import (
 // Validator は入力検証ユーティリティ
 // A03:2021 - Injection 対策
 
+// プリコンパイル済み正規表現
+var (
+	emailRegex      = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+	htmlTagRegex    = regexp.MustCompile(`<[^>]*>`)
+	controlCharRegex = regexp.MustCompile(`[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]`)
+)
+
 // ValidateEmail はメールアドレスの形式を検証
 func ValidateEmail(email string) bool {
 	if len(email) > 254 {
 		return false
 	}
-	// RFC 5322に基づく簡易的なメールアドレス検証
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(email)
 }
 
@@ -41,9 +46,9 @@ func ValidateName(name string) bool {
 // SanitizeString は文字列から危険な文字を除去
 func SanitizeString(s string) string {
 	// HTMLタグを除去
-	s = regexp.MustCompile(`<[^>]*>`).ReplaceAllString(s, "")
+	s = htmlTagRegex.ReplaceAllString(s, "")
 	// 制御文字を除去（タブ、改行は許可）
-	s = regexp.MustCompile(`[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]`).ReplaceAllString(s, "")
+	s = controlCharRegex.ReplaceAllString(s, "")
 	// 前後の空白を除去
 	s = strings.TrimSpace(s)
 	return s
